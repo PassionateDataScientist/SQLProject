@@ -144,12 +144,45 @@ QUESTIONS:
 /* Q10: Produce a list of facilities with a total revenue less than 1000.
 The output of facility name and total revenue, sorted by revenue. Remember
 that there's a different cost for guests and members! */
+  SELECT name, revenue from(
+        SELECT f.name, SUM(CASE
+        WHEN memid = 0 then slots * f.guestcost
+        ELSE slots*f.membercost
+        END) AS revenue
+        FROM Bookings AS b
+        INNER JOIN Facilities AS f
+        ON b.facid = f.facid
+        GROUP BY f.name
+        ) AS agg
+        WHERE revenue < 1000
+        ORDER BY revenue;
 
 /* Q11: Produce a report of members and who recommended them in alphabetic surname,firstname order */
+ select m.surname, m.firstname, m.recommendedby AS recomender_id, r.surname AS recomender_surname,
+r.firstname AS recomender_firstname
+from Members AS m
+left join Members AS r ON m.recommendedby = r.memid
+where m.recommendedby != 0
+order by r.surname, r.firstname;
 
 
 /* Q12: Find the facilities with their usage by member, but not guests */
+    SELECT b.facid, f.name, SUM(b.slots) AS total_slots
+        FROM Bookings AS b
+        INNER JOIN Facilities AS f
+        ON b.facid = f.facid
+        GROUP BY b.facid
+        ORDER BY b.facid;
 
 
 /* Q13: Find the facilities usage by month, but not guests */
+    SELECT F.name AS Facility, SUM(B.slots) as Usage, 
+strftime('%Y-%m', B.starttime) as month
+
+ FROM Bookings AS B
+INNER JOIN Facilities AS F ON B.facid = F.facid
+INNER JOIN Members as M ON B.memid=M.memid
+WHERE M.memid>'0'
+GROUP BY Facility, month
+ORDER BY usage DESC
 
